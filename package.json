@@ -1,0 +1,19 @@
+{
+  "name": "mycss",
+  "version": "0.1.0",
+  "description": "dom tree in css",
+  "main": "index.js",
+  "author": "devalla",
+  "license": "ISC",
+  "private": false,
+  "scripts": {
+    "test": "node index.js ./test/test.html ./test/test.css",
+    "run": "node index.js"
+  },
+  "bin": {
+    "cssdt": "index.js"
+  },
+  "dependencies": {
+    "node-html-parser": "^6.1.5"
+  }
+}
