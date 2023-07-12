@@ -1,10 +1,14 @@
 #!/usr/local/bin/node
-const dt =  require("./domtojson");
-const parser = require("node-html-parser");
-const process = require('process');
 const fs = require("fs");
-const html = parser.parse(fs.readFileSync(process.argv[2]))
-const body = dt.toJSON(html.querySelector("body"))
+const process = require('process');
+const { JSDOM } = require("jsdom")
+const dt =  require("./domtojson");
+
+const inFile = process.argv[2]
+const outFile = process.argv[3]
+
+const html = new JSDOM(fs.readFileSync(inFile))
+const body = dt.toJSON(html.window.document.querySelector("body"))
 
 function removeScript(){
     for (let item of body.childNodes){
@@ -15,9 +19,8 @@ function removeScript(){
 }
 
 function flatten(object, path = '', res = undefined) {
-    if (!Array.isArray(res)) {
-        res = [];
-    }
+    if (!Array.isArray(res)) {res = []};
+
     if (object !== null && typeof object === 'object') {
         if (Array.isArray(object)) {
             for (let i = 0; i < object.length; i++) {
@@ -25,47 +28,44 @@ function flatten(object, path = '', res = undefined) {
             }
         } else {
             const keys = Object.keys(object)
-            for (let i = 0; i < keys.length; i++) {
+            for (let i=0; i < keys.length; i++) {
                 const key = keys[i]
                 flatten(object[key], path ? path + '.' + key : key, res)
             }
         }
     } else {
-        if (path) {
-            res[path] = object
-        }
+        if (path){ res.push({[path]:object}) }
     }
-    return res
+    return res;
 }
 
-function Content(){
-    let content = "/* Dom Tree\n"
-    const flat = flatten(body)
-    for (key of Object.keys(flat)){
-        let len = key.replace("tagName", "")
-        len = len.split("childNodes[0].").join('\t')
-        len = len.split("childNodes[1].").join('\t')
-        len = len.split("childNodes[2].").join('\t')
-        len = len.split("childNodes[3].").join('\t')
-        len = len.split("childNodes[4].").join('\t')
-        len = len.split("childNodes[5].").join('\t')
-        len = len.split("childNodes[6].").join('\t')
-        len = len.split("childNodes[7].").join('\t')
-        len = len.split("childNodes[8].").join('\t')
-
-        content += len + flat[key] + "\n";
-    }
-    content += "*/ \n"
-    return content
+function Content(data){
+    let output = `/* Dom Tree: ${inFile.split("/").pop()}`;
+    data.forEach( item =>{
+        const key = Object.keys(item)[0];
+        const value = item[key];
+        const parts = key.split('.');
+        let tabs = '';
+        for (let i = 0; i < parts.length - 1; i++){tabs += '\t'};
+        if (parts[parts.length - 1].includes('attributes')){
+            if ( value == "id" || value == "class" ){
+                output += value == "id" ? ', #' : ', .';
+            } else{
+                output += value;
+            }
+        }else{
+            output += `\n${tabs}${value}`;
+        }
+    });
+    output += "\n*/";
+    return output;
 }
 
 function Main(){
-    removeScript()
-    let content = Content()
-    fs.writeFile(process.argv[3], content, err => {
-        if (err) {
-            console.error(err);
-        }
+    removeScript();
+    const flat = flatten(body);
+    fs.writeFileSync(outFile, Content(flat), err => {
+        if (err) {console.error(err)};
     });
 }
 

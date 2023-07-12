@@ -1,11 +1,11 @@
-/* Dom Tree
+/* Dom Tree: test.html
 body
 	main
 		svg
 			circle
-		div
-			input
-			button
-			button
+		div, #container
+			input, #inp, .input
+			button, .start
+			button, .pause
 	section
-*/ 
+*/
