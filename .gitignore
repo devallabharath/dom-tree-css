@@ -1,4 +1,5 @@
-copy.txt
 node_modules/
-yarn.lock
+Changelog.md
+Readme.md
 TODO
+yarn.lock
