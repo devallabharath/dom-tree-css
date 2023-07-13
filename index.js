@@ -3,9 +3,22 @@ const fs = require("fs");
 const { extname } = require('path');
 const process = require('process');
 const { JSDOM } = require("jsdom")
+const yargs = require("yargs");
 
-const inFile = process.argv[2]
-const outFile = process.argv[3]
+// Configure the input and output paths as command line options
+yargs
+.usage("Usage:\n> cssdt -i test.html -o test.css")
+.option("input", {alias:"i", describe: "Input html file path", type: "URL", demandOption: true })
+.option("output", {alias:"o", describe: "Output file path", type: "URL", demandOption: true })
+.help(true)
+.argv;
+
+// Get command line arguments for input and output file path
+const options = require('yargs/yargs')(process.argv.slice(2)).argv;
+
+// Store input and output file paths in variables
+const inFile = options.i
+const outFile = options.o
 let html;
 let body;
 
